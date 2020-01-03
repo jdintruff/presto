@@ -76,6 +76,12 @@ public class QueryResource
         if (queryInfo.isPresent()) {
             return Response.ok(queryInfo.get()).build();
         }
+        else {
+            queryInfo = Optional.of(dispatchManager.getHistoricalQueryManager().getQueryById(queryId.getId()));
+            if (queryInfo.isPresent()) {
+                return Response.ok(queryInfo.get()).build();
+            }
+        }
         return Response.status(Status.GONE).build();
     }
 

@@ -112,4 +112,6 @@ public interface QueryManager
     void cancelStage(StageId stageId);
 
     QueryManagerStats getStats();
+
+    HistoricalQueryManager getHistoricalQueryManager();
 }

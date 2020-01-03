@@ -21,6 +21,7 @@ import io.airlift.resolver.ArtifactResolver;
 import io.airlift.resolver.DefaultArtifact;
 import io.prestosql.connector.ConnectorManager;
 import io.prestosql.eventlistener.EventListenerManager;
+import io.prestosql.execution.HistoricalQueryManager;
 import io.prestosql.execution.resourcegroups.ResourceGroupManager;
 import io.prestosql.metadata.MetadataManager;
 import io.prestosql.security.AccessControlManager;
@@ -30,6 +31,7 @@ import io.prestosql.spi.block.BlockEncoding;
 import io.prestosql.spi.classloader.ThreadContextClassLoader;
 import io.prestosql.spi.connector.ConnectorFactory;
 import io.prestosql.spi.eventlistener.EventListenerFactory;
+import io.prestosql.spi.history.QueryHistorySourceFactory;
 import io.prestosql.spi.resourcegroups.ResourceGroupConfigurationManagerFactory;
 import io.prestosql.spi.security.PasswordAuthenticatorFactory;
 import io.prestosql.spi.security.SystemAccessControlFactory;
@@ -78,6 +80,7 @@ public class PluginManager
     private final PasswordAuthenticatorManager passwordAuthenticatorManager;
     private final EventListenerManager eventListenerManager;
     private final SessionPropertyDefaults sessionPropertyDefaults;
+    private final HistoricalQueryManager historicalQueryManager;
     private final ArtifactResolver resolver;
     private final File installedPluginsDir;
     private final List<String> plugins;
@@ -94,7 +97,8 @@ public class PluginManager
             AccessControlManager accessControlManager,
             PasswordAuthenticatorManager passwordAuthenticatorManager,
             EventListenerManager eventListenerManager,
-            SessionPropertyDefaults sessionPropertyDefaults)
+            SessionPropertyDefaults sessionPropertyDefaults,
+            HistoricalQueryManager historicalQueryManager)
     {
         requireNonNull(nodeInfo, "nodeInfo is null");
         requireNonNull(config, "config is null");
@@ -115,6 +119,7 @@ public class PluginManager
         this.passwordAuthenticatorManager = requireNonNull(passwordAuthenticatorManager, "passwordAuthenticatorManager is null");
         this.eventListenerManager = requireNonNull(eventListenerManager, "eventListenerManager is null");
         this.sessionPropertyDefaults = requireNonNull(sessionPropertyDefaults, "sessionPropertyDefaults is null");
+        this.historicalQueryManager = requireNonNull(historicalQueryManager, "historicalQueryManager is null");
     }
 
     public void loadPlugins()
@@ -217,6 +222,11 @@ public class PluginManager
         for (EventListenerFactory eventListenerFactory : plugin.getEventListenerFactories()) {
             log.info("Registering event listener %s", eventListenerFactory.getName());
             eventListenerManager.addEventListenerFactory(eventListenerFactory);
+        }
+
+        for (QueryHistorySourceFactory queryHistorySourceFactory : plugin.getQueryHistorySources()) {
+            log.info("Registering query classifier %s", queryHistorySourceFactory.getName());
+            historicalQueryManager.addQueryHistorySourceFactory(queryHistorySourceFactory);
         }
     }
 

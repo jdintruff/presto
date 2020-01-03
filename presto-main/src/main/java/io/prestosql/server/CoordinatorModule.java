@@ -61,6 +61,7 @@ import io.prestosql.execution.ExplainAnalyzeContext;
 import io.prestosql.execution.ForQueryExecution;
 import io.prestosql.execution.GrantRolesTask;
 import io.prestosql.execution.GrantTask;
+import io.prestosql.execution.HistoricalQueryManager;
 import io.prestosql.execution.PrepareTask;
 import io.prestosql.execution.QueryExecution;
 import io.prestosql.execution.QueryExecutionMBean;
@@ -222,6 +223,7 @@ public class CoordinatorModule
         jaxrsBinder(binder).bind(QueryStateInfoResource.class);
         jaxrsBinder(binder).bind(ResourceGroupStateInfoResource.class);
         binder.bind(QueryIdGenerator.class).in(Scopes.SINGLETON);
+        binder.bind(HistoricalQueryManager.class).in(Scopes.SINGLETON);
         binder.bind(QueryManager.class).to(SqlQueryManager.class).in(Scopes.SINGLETON);
         newExporter(binder).export(QueryManager.class).withGeneratedName();
         binder.bind(QueryPreparer.class).in(Scopes.SINGLETON);

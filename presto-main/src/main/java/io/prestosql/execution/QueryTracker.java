@@ -60,15 +60,18 @@ public class QueryTracker<T extends TrackedQuery>
 
     private final ScheduledExecutorService queryManagementExecutor;
 
+    private final HistoricalQueryManager historyManager;
+
     @GuardedBy("this")
     private ScheduledFuture<?> backgroundTask;
 
-    public QueryTracker(QueryManagerConfig queryManagerConfig, ScheduledExecutorService queryManagementExecutor)
+    public QueryTracker(QueryManagerConfig queryManagerConfig, ScheduledExecutorService queryManagementExecutor, HistoricalQueryManager historyManager)
     {
         requireNonNull(queryManagerConfig, "queryManagerConfig is null");
         this.minQueryExpireAge = queryManagerConfig.getMinQueryExpireAge();
         this.maxQueryHistory = queryManagerConfig.getMaxQueryHistory();
         this.clientTimeout = queryManagerConfig.getClientTimeout();
+        this.historyManager = historyManager;
 
         this.queryManagementExecutor = requireNonNull(queryManagementExecutor, "queryManagementExecutor is null");
     }
@@ -274,6 +277,11 @@ public class QueryTracker<T extends TrackedQuery>
         DateTime lastHeartbeat = query.getLastHeartbeat();
 
         return lastHeartbeat != null && lastHeartbeat.isBefore(oldestAllowedHeartbeat);
+    }
+
+    public HistoricalQueryManager getHistoryManager()
+    {
+        return historyManager;
     }
 
     public interface TrackedQuery

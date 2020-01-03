@@ -16,6 +16,7 @@ package io.prestosql.dispatcher;
 import com.google.common.util.concurrent.AbstractFuture;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.prestosql.Session;
+import io.prestosql.execution.HistoricalQueryManager;
 import io.prestosql.execution.QueryIdGenerator;
 import io.prestosql.execution.QueryInfo;
 import io.prestosql.execution.QueryManagerConfig;
@@ -88,7 +89,8 @@ public class DispatchManager
             SessionSupplier sessionSupplier,
             SessionPropertyDefaults sessionPropertyDefaults,
             QueryManagerConfig queryManagerConfig,
-            DispatchExecutor dispatchExecutor)
+            DispatchExecutor dispatchExecutor,
+            HistoricalQueryManager historyManager)
     {
         this.queryIdGenerator = requireNonNull(queryIdGenerator, "queryIdGenerator is null");
         this.queryPreparer = requireNonNull(queryPreparer, "queryPreparer is null");
@@ -105,7 +107,7 @@ public class DispatchManager
 
         this.queryExecutor = requireNonNull(dispatchExecutor, "dispatchExecutor is null").getExecutor();
 
-        this.queryTracker = new QueryTracker<>(queryManagerConfig, dispatchExecutor.getScheduledExecutor());
+        this.queryTracker = new QueryTracker<>(queryManagerConfig, dispatchExecutor.getScheduledExecutor(), historyManager);
     }
 
     @PostConstruct
@@ -298,6 +300,11 @@ public class DispatchManager
 
         queryTracker.tryGetQuery(queryId)
                 .ifPresent(query -> query.fail(cause));
+    }
+
+    public HistoricalQueryManager getHistoricalQueryManager()
+    {
+        return queryTracker.getHistoryManager();
     }
 
     private static class DispatchQueryCreationFuture

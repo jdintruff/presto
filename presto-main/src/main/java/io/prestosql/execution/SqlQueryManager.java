@@ -81,7 +81,7 @@ public class SqlQueryManager
     private final QueryManagerStats stats = new QueryManagerStats();
 
     @Inject
-    public SqlQueryManager(ClusterMemoryManager memoryManager, QueryMonitor queryMonitor, EmbedVersion embedVersion, QueryManagerConfig queryManagerConfig)
+    public SqlQueryManager(ClusterMemoryManager memoryManager, QueryMonitor queryMonitor, EmbedVersion embedVersion, QueryManagerConfig queryManagerConfig, HistoricalQueryManager historyManager)
     {
         this.memoryManager = requireNonNull(memoryManager, "memoryManager is null");
         this.queryMonitor = requireNonNull(queryMonitor, "queryMonitor is null");
@@ -95,7 +95,7 @@ public class SqlQueryManager
         this.queryManagementExecutor = Executors.newScheduledThreadPool(queryManagerConfig.getQueryManagerExecutorPoolSize(), threadsNamed("query-management-%s"));
         this.queryManagementExecutorMBean = new ThreadPoolExecutorMBean((ThreadPoolExecutor) queryManagementExecutor);
 
-        this.queryTracker = new QueryTracker<>(queryManagerConfig, queryManagementExecutor);
+        this.queryTracker = new QueryTracker<>(queryManagerConfig, queryManagementExecutor, historyManager);
     }
 
     @PostConstruct
@@ -275,6 +275,12 @@ public class SqlQueryManager
     public QueryManagerStats getStats()
     {
         return stats;
+    }
+
+    @Override
+    public HistoricalQueryManager getHistoricalQueryManager()
+    {
+        return queryTracker.getHistoryManager();
     }
 
     @Managed(description = "Query scheduler executor")

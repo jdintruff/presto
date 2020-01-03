@@ -50,6 +50,7 @@ import io.prestosql.execution.DataDefinitionTask;
 import io.prestosql.execution.DeallocateTask;
 import io.prestosql.execution.DropTableTask;
 import io.prestosql.execution.DropViewTask;
+import io.prestosql.execution.HistoricalQueryManager;
 import io.prestosql.execution.Lifespan;
 import io.prestosql.execution.NodeTaskMap;
 import io.prestosql.execution.PrepareTask;
@@ -374,7 +375,8 @@ public class LocalQueryRunner
                 accessControl,
                 new PasswordAuthenticatorManager(),
                 new EventListenerManager(),
-                new SessionPropertyDefaults(nodeInfo));
+                new SessionPropertyDefaults(nodeInfo),
+                new HistoricalQueryManager());
 
         connectorManager.addConnectorFactory(globalSystemConnectorFactory, globalSystemConnectorFactory.getClass()::getClassLoader);
         connectorManager.createCatalog(GlobalSystemConnector.NAME, GlobalSystemConnector.NAME, ImmutableMap.of());
